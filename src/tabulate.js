@@ -85,7 +85,8 @@ function uncovered(file, options) {
 	return all
 		.map(function(line) {
 			const relative = file.file.replace(options.prefix, "")
-			return span(line)
+			const path = `${line}`
+			return span(path)
 		})
 		.join(", ")
 }

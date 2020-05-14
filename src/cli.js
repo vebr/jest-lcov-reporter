@@ -29,6 +29,13 @@ async function main() {
 	}
 
 	console.log(diff(lcov, before, options))
+
+	fs.writeFile("./tmp/test.html", diff(lcov, before, options), function(err) {
+		if(err) {
+				return console.log(err);
+		}
+		console.log("The file was saved!");
+	}); 
 }
 
 main().catch(function(err) {
