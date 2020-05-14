@@ -81,16 +81,24 @@ test("tabulate should generate a correct table", function() {
 				hit: 5,
 				details: [
 					{
-						line: 20,
-						hit: 0,
-					},
-					{
-						line: 21,
-						hit: 0,
-					},
-					{
 						line: 22,
-						hit: 3,
+						hit: 0,
+					},
+					{
+						line: 31,
+						hit: 0,
+					},
+					{
+						line: 32,
+						hit: 0,
+					},
+					{
+						line: 33,
+						hit: 0,
+					},
+					{
+						line: 34,
+						hit: 0,
 					},
 				],
 			},
@@ -169,11 +177,23 @@ test("tabulate should generate a correct table", function() {
 				td(b("50%")),
 				td(
 					span(
-						"20"
+						"..."
 					),
 					", ",
 					span(
-						"21"
+						"31",
+					),
+					", ",
+					span(
+						"32",
+					),
+					", ",
+					span(
+						"33",
+					),
+					", ",
+					span(
+						"34",
 					),
 				),
 			),
