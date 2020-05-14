@@ -26,4 +26,4 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage/clover.xml # optional
-          flags: unittests # optional
+          flags: unit_tests # optional
