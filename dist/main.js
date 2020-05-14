@@ -22868,12 +22868,16 @@ function uncovered(file, options) {
 	const lines = (file.lines ? file.lines.details : [])
 		.filter(line => line.hit === 0)
 		.map(line => line.line);
-	let tempAll = ['...'];
-	let all = [...branches, ...lines].sort();
-	if (all.length > 5) {
-		const lastFour = all.slice(Math.max(all.length - 4, 0));
-		all = tempAll.concat(lastFour);
-	}
+	const allLines = [...branches, ...lines];
+	let tempAll = ["..."];
+	let all =
+		allLines.sort().length > 4
+			? tempAll.concat(
+					allLines
+						.sort()
+						.slice(Math.max(allLines.length - 4, 0)),
+			  )
+			: allLines;
 	return all
 		.map(function(line) {
 			const relative = file.file.replace(options.prefix, "");
