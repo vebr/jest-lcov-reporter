@@ -1,4 +1,4 @@
-name: Code Coverage Report
+name: Jest Lcov Reporter
 description: Comments a pull request with the code coverage
 author: Veddha Edsa
 branding:
