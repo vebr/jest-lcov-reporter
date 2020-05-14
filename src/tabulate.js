@@ -82,7 +82,7 @@ function uncovered(file, options) {
 	const allLines = [...branches, ...lines]
 	let tempAll = ["..."]
 	let all = [...branches, ...lines].sort()
-	if (all.length > 5) {
+	if (all.length > 4) {
 		const lastFour = all.slice(Math.max(all.length - 4, 0))
 
 		all = tempAll.concat(lastFour)
