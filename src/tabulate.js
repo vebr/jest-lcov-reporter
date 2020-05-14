@@ -79,13 +79,17 @@ function uncovered(file, options) {
 	const lines = (file.lines ? file.lines.details : [])
 		.filter(line => line.hit === 0)
 		.map(line => line.line)
-
-	const all = [...branches, ...lines].sort()
-
+	let tempAll = ['...'];
+	let all = [...branches, ...lines].sort()
+	if (all.length > 5) {
+		const lastFour = all.slice(Math.max(all.length - 4, 0));
+		all = tempAll.concat(lastFour)
+	}
 	return all
 		.map(function(line) {
 			const relative = file.file.replace(options.prefix, "")
-			return span(line)
+			const path = `${line}`
+			return span(path)
 		})
 		.join(", ")
 }

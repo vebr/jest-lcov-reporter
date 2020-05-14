@@ -1,6 +1,6 @@
 {
 	"name": "jest-lcov-reporter",
-	"version": "0.0.1",
+	"version": "0.2.0",
 	"description": "Comments a pull request with the lcov code coverage",
 	"license": "MIT",
 	"author": "Veddha Edsa <@vebr>",
