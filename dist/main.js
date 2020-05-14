@@ -22783,7 +22783,7 @@ const th = tag("th");
 const b = tag("b");
 const table = tag("table");
 const tbody = tag("tbody");
-const a = tag("a");
+const span = tag("span");
 
 const fragment = function(...children) {
 	return children.join("")
@@ -22841,11 +22841,10 @@ function toRow(file, indent, options) {
 
 function filename(file, indent, options) {
 	const relative = file.file.replace(options.prefix, "");
-	const href = `https://github.com/${options.repository}/blob/${options.commit}/${relative}`;
 	const parts = relative.split("/");
 	const last = parts[parts.length - 1];
 	const space = indent ? "&nbsp; &nbsp;" : "";
-	return fragment(space, a({ href }, last))
+	return fragment(space, span(last))
 }
 
 function percentage$1(item) {
@@ -22875,8 +22874,7 @@ function uncovered(file, options) {
 	return all
 		.map(function(line) {
 			const relative = file.file.replace(options.prefix, "");
-			const href = `https://github.com/${options.repository}/blob/${options.commit}/${relative}#L${line}`;
-			return a({ href }, line)
+			return span(line)
 		})
 		.join(", ")
 }
