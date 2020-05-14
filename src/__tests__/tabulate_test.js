@@ -103,8 +103,8 @@ test("tabulate should generate a correct table", function() {
 				],
 			},
 			functions: {
-				hit: 2,
-				found: 3,
+				hit: 4,
+				found: 6,
 				details: [
 					{
 						name: "foo",
@@ -117,6 +117,10 @@ test("tabulate should generate a correct table", function() {
 					{
 						name: "baz",
 						line: 54,
+					},
+					{
+						name: "foobar",
+						line: 62,
 					},
 				],
 			},
