@@ -153,9 +153,7 @@ test("tabulate should generate a correct table", function() {
 				td(b("66.67%")),
 				td(b("91.30%")),
 				td(
-					span(
-						37,
-					),
+					span("37"),
 				),
 			),
 			tr(td({ colspan: 5 }, b("src/bar"))),
@@ -171,11 +169,11 @@ test("tabulate should generate a correct table", function() {
 				td(b("50%")),
 				td(
 					span(
-						20,
+						"20"
 					),
 					", ",
 					span(
-						21,
+						"21"
 					),
 				),
 			),
