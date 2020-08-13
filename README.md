@@ -26,7 +26,7 @@ branch. When this is set a diff of the coverage percentages is shown.
 ## Example usage
 
 ```yml
-uses: vebr/jest-lcov-reporter@0.2.0
+uses: vebr/jest-lcov-reporter@v0.2.0
 with:
   github-token: ${{ secrets.GITHUB_TOKEN }}
   lcov-file: ./coverage/lcov.info
