@@ -8,12 +8,20 @@ inputs:
   github-token:
     description: Github token
     required: true
+  name:
+    description: Name of report
+    required: false
+    default: ""
   lcov-file:
     description: The location of the lcov.info file
     required: false
   lcov-base:
     description: The location of the lcov file for the base branch
     required: false
+  update-comment:
+    description: Update the existing comment if it exists instead of creating a new one
+    required: false
+    default: false
 runs:
   using: node12
   main: dist/main.js

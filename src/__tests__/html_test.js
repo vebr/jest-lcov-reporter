@@ -10,6 +10,8 @@ import {
 	a,
 	span,
 	fragment,
+	h2,
+	p,
 } from "../html"
 
 test("html tags should return the correct html", function() {
@@ -23,6 +25,8 @@ test("html tags should return the correct html", function() {
 	expect(tbody("foo", "bar")).toBe("<tbody>foobar</tbody>")
 	expect(a("foo", "bar")).toBe("<a>foobar</a>")
 	expect(span("foo", "bar")).toBe("<span>foobar</span>")
+	expect(h2("foo", "bar")).toBe("<h2>foobar</h2>")
+	expect(p("foo", "bar")).toBe("<p>foobar</p>")
 })
 
 test("html fragment should return the children", function() {

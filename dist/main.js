@@ -30,22 +30,54 @@ function getCjsExportFromNamespace (n) {
 	return n && n['default'] || n;
 }
 
-var command = createCommonjsModule(function (module, exports) {
+var utils = createCommonjsModule(function (module, exports) {
+// We use any as a valid input type
+/* eslint-disable @typescript-eslint/no-explicit-any */
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * Sanitizes an input into a string so it can be passed into issueCommand safely
+ * @param input input to sanitize into a string
+ */
+function toCommandValue(input) {
+    if (input === null || input === undefined) {
+        return '';
+    }
+    else if (typeof input === 'string' || input instanceof String) {
+        return input;
+    }
+    return JSON.stringify(input);
+}
+exports.toCommandValue = toCommandValue;
+
+});
+
+unwrapExports(utils);
+var utils_1 = utils.toCommandValue;
+
+var command = createCommonjsModule(function (module, exports) {
+var __importStar = (commonjsGlobal && commonjsGlobal.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const os$1 = __importStar(os);
 
 /**
  * Commands
  *
  * Command Format:
- *   ##[name key=value;key=value]message
+ *   ::name key=value,key=value::message
  *
  * Examples:
- *   ##[warning]This is the user warning message
- *   ##[set-secret name=mypassword]definitelyNotAPassword!
+ *   ::warning::This is the message
+ *   ::set-env name=MY_VAR::some value
  */
 function issueCommand(command, properties, message) {
     const cmd = new Command(command, properties, message);
-    process.stdout.write(cmd.toString() + os.EOL);
+    process.stdout.write(cmd.toString() + os$1.EOL);
 }
 exports.issueCommand = issueCommand;
 function issue(name, message = '') {
@@ -66,34 +98,39 @@ class Command {
         let cmdStr = CMD_STRING + this.command;
         if (this.properties && Object.keys(this.properties).length > 0) {
             cmdStr += ' ';
+            let first = true;
             for (const key in this.properties) {
                 if (this.properties.hasOwnProperty(key)) {
                     const val = this.properties[key];
                     if (val) {
-                        // safely append the val - avoid blowing up when attempting to
-                        // call .replace() if message is not a string for some reason
-                        cmdStr += `${key}=${escape(`${val || ''}`)},`;
+                        if (first) {
+                            first = false;
+                        }
+                        else {
+                            cmdStr += ',';
+                        }
+                        cmdStr += `${key}=${escapeProperty(val)}`;
                     }
                 }
             }
         }
-        cmdStr += CMD_STRING;
-        // safely append the message - avoid blowing up when attempting to
-        // call .replace() if message is not a string for some reason
-        const message = `${this.message || ''}`;
-        cmdStr += escapeData(message);
+        cmdStr += `${CMD_STRING}${escapeData(this.message)}`;
         return cmdStr;
     }
 }
 function escapeData(s) {
-    return s.replace(/\r/g, '%0D').replace(/\n/g, '%0A');
+    return utils.toCommandValue(s)
+        .replace(/%/g, '%25')
+        .replace(/\r/g, '%0D')
+        .replace(/\n/g, '%0A');
 }
-function escape(s) {
-    return s
+function escapeProperty(s) {
+    return utils.toCommandValue(s)
+        .replace(/%/g, '%25')
         .replace(/\r/g, '%0D')
         .replace(/\n/g, '%0A')
-        .replace(/]/g, '%5D')
-        .replace(/;/g, '%3B');
+        .replace(/:/g, '%3A')
+        .replace(/,/g, '%2C');
 }
 
 });
@@ -101,6 +138,40 @@ function escape(s) {
 unwrapExports(command);
 var command_1 = command.issueCommand;
 var command_2 = command.issue;
+
+var fileCommand = createCommonjsModule(function (module, exports) {
+// For internal use, subject to change.
+var __importStar = (commonjsGlobal && commonjsGlobal.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+// We use any as a valid input type
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const fs = __importStar(fs__default);
+const os$1 = __importStar(os);
+
+function issueCommand(command, message) {
+    const filePath = process.env[`GITHUB_${command}`];
+    if (!filePath) {
+        throw new Error(`Unable to find environment variable for file command ${command}`);
+    }
+    if (!fs.existsSync(filePath)) {
+        throw new Error(`Missing file at path: ${filePath}`);
+    }
+    fs.appendFileSync(filePath, `${utils.toCommandValue(message)}${os$1.EOL}`, {
+        encoding: 'utf8'
+    });
+}
+exports.issueCommand = issueCommand;
+
+});
+
+unwrapExports(fileCommand);
+var fileCommand_1 = fileCommand.issueCommand;
 
 var core = createCommonjsModule(function (module, exports) {
 var __awaiter = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -112,10 +183,19 @@ var __awaiter = (commonjsGlobal && commonjsGlobal.__awaiter) || function (thisAr
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importStar = (commonjsGlobal && commonjsGlobal.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 
 
 
+const os$1 = __importStar(os);
+const path$1 = __importStar(path);
 /**
  * The code to exit an action
  */
@@ -136,11 +216,21 @@ var ExitCode;
 /**
  * Sets env variable for this action and future actions in the job
  * @param name the name of the variable to set
- * @param val the value of the variable
+ * @param val the value of the variable. Non-string values will be converted to a string via JSON.stringify
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function exportVariable(name, val) {
-    process.env[name] = val;
-    command.issueCommand('set-env', { name }, val);
+    const convertedVal = utils.toCommandValue(val);
+    process.env[name] = convertedVal;
+    const filePath = process.env['GITHUB_ENV'] || '';
+    if (filePath) {
+        const delimiter = '_GitHubActionsFileCommandDelimeter_';
+        const commandValue = `${name}<<${delimiter}${os$1.EOL}${convertedVal}${os$1.EOL}${delimiter}`;
+        fileCommand.issueCommand('ENV', commandValue);
+    }
+    else {
+        command.issueCommand('set-env', { name }, convertedVal);
+    }
 }
 exports.exportVariable = exportVariable;
 /**
@@ -156,8 +246,14 @@ exports.setSecret = setSecret;
  * @param inputPath
  */
 function addPath(inputPath) {
-    command.issueCommand('add-path', {}, inputPath);
-    process.env['PATH'] = `${inputPath}${path.delimiter}${process.env['PATH']}`;
+    const filePath = process.env['GITHUB_PATH'] || '';
+    if (filePath) {
+        fileCommand.issueCommand('PATH', inputPath);
+    }
+    else {
+        command.issueCommand('add-path', {}, inputPath);
+    }
+    process.env['PATH'] = `${inputPath}${path$1.delimiter}${process.env['PATH']}`;
 }
 exports.addPath = addPath;
 /**
@@ -179,12 +275,22 @@ exports.getInput = getInput;
  * Sets the value of an output.
  *
  * @param     name     name of the output to set
- * @param     value    value to store
+ * @param     value    value to store. Non-string values will be converted to a string via JSON.stringify
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function setOutput(name, value) {
     command.issueCommand('set-output', { name }, value);
 }
 exports.setOutput = setOutput;
+/**
+ * Enables or disables the echoing of commands into stdout for the rest of the step.
+ * Echoing is disabled by default if ACTIONS_STEP_DEBUG is not set.
+ *
+ */
+function setCommandEcho(enabled) {
+    command.issue('echo', enabled ? 'on' : 'off');
+}
+exports.setCommandEcho = setCommandEcho;
 //-----------------------------------------------------------------------
 // Results
 //-----------------------------------------------------------------------
@@ -202,6 +308,13 @@ exports.setFailed = setFailed;
 // Logging Commands
 //-----------------------------------------------------------------------
 /**
+ * Gets whether Actions Step Debug is on or not
+ */
+function isDebug() {
+    return process.env['RUNNER_DEBUG'] === '1';
+}
+exports.isDebug = isDebug;
+/**
  * Writes debug message to user log
  * @param message debug message
  */
@@ -211,18 +324,18 @@ function debug(message) {
 exports.debug = debug;
 /**
  * Adds an error issue
- * @param message error issue message
+ * @param message error issue message. Errors will be converted to string via toString()
  */
 function error(message) {
-    command.issue('error', message);
+    command.issue('error', message instanceof Error ? message.toString() : message);
 }
 exports.error = error;
 /**
  * Adds an warning issue
- * @param message warning issue message
+ * @param message warning issue message. Errors will be converted to string via toString()
  */
 function warning(message) {
-    command.issue('warning', message);
+    command.issue('warning', message instanceof Error ? message.toString() : message);
 }
 exports.warning = warning;
 /**
@@ -230,7 +343,7 @@ exports.warning = warning;
  * @param message info message
  */
 function info(message) {
-    process.stdout.write(message + os.EOL);
+    process.stdout.write(message + os$1.EOL);
 }
 exports.info = info;
 /**
@@ -280,8 +393,9 @@ exports.group = group;
  * Saves state for current action, the state can only be retrieved by this action's post job execution.
  *
  * @param     name     name of the state to store
- * @param     value    value to store
+ * @param     value    value to store. Non-string values will be converted to a string via JSON.stringify
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function saveState(name, value) {
     command.issueCommand('save-state', { name }, value);
 }
@@ -306,16 +420,18 @@ var core_3 = core.setSecret;
 var core_4 = core.addPath;
 var core_5 = core.getInput;
 var core_6 = core.setOutput;
-var core_7 = core.setFailed;
-var core_8 = core.debug;
-var core_9 = core.error;
-var core_10 = core.warning;
-var core_11 = core.info;
-var core_12 = core.startGroup;
-var core_13 = core.endGroup;
-var core_14 = core.group;
-var core_15 = core.saveState;
-var core_16 = core.getState;
+var core_7 = core.setCommandEcho;
+var core_8 = core.setFailed;
+var core_9 = core.isDebug;
+var core_10 = core.debug;
+var core_11 = core.error;
+var core_12 = core.warning;
+var core_13 = core.info;
+var core_14 = core.startGroup;
+var core_15 = core.endGroup;
+var core_16 = core.group;
+var core_17 = core.saveState;
+var core_18 = core.getState;
 
 /*!
  * isobject <https://github.com/jonschlinkert/isobject>
@@ -392,8 +508,8 @@ const macosRelease = release => {
 
 var macosRelease_1 = macosRelease;
 // TODO: remove this in the next major version
-var default_1 = macosRelease;
-macosRelease_1.default = default_1;
+var _default = macosRelease;
+macosRelease_1.default = _default;
 
 /**
  * Tries to execute a function and discards any error that occurs.
@@ -3084,6 +3200,7 @@ if (process.platform === 'linux') {
 // ignored, since we can never get coverage for them.
 
 var signals$1 = signals;
+var isWin$2 = /^win/i.test(process.platform);
 
 var EE = events;
 /* istanbul ignore if */
@@ -3173,6 +3290,11 @@ signals$1.forEach(function (sig) {
       /* istanbul ignore next */
       emit('afterexit', null, sig);
       /* istanbul ignore next */
+      if (isWin$2 && sig === 'SIGHUP') {
+        // "SIGHUP" throws an `ENOSYS` error on Windows,
+        // so use a supported signal instead
+        sig = 'SIGINT';
+      }
       process.kill(process.pid, sig);
     }
   };
@@ -22775,6 +22897,7 @@ function tag(name) {
 	}
 }
 
+const h2 = tag("h2");
 const details = tag("details");
 const summary = tag("summary");
 const tr = tag("tr");
@@ -22784,6 +22907,7 @@ const b = tag("b");
 const table = tag("table");
 const tbody = tag("tbody");
 const span = tag("span");
+const p = tag("p");
 
 const fragment = function(...children) {
 	return children.join("")
@@ -22868,16 +22992,13 @@ function uncovered(file, options) {
 	const lines = (file.lines ? file.lines.details : [])
 		.filter(line => line.hit === 0)
 		.map(line => line.line);
-	const allLines = [...branches, ...lines];
 	let tempAll = ["..."];
-	let all =
-		allLines.sort().length > 4
-			? tempAll.concat(
-					allLines
-						.sort()
-						.slice(Math.max(allLines.length - 4, 0)),
-			  )
-			: allLines;
+	let all = [...branches, ...lines].sort();
+	if (all.length > 4) {
+		const lastFour = all.slice(Math.max(all.length - 4, 0));
+
+		all = tempAll.concat(lastFour);
+	}
 	return all
 		.map(function(line) {
 			const relative = file.file.replace(options.prefix, "");
@@ -22887,18 +23008,36 @@ function uncovered(file, options) {
 		.join(", ")
 }
 
-function comment(lcov, options) {
+function heading(name) {
+	if (name) {
+		return h2(`Code Coverage Report: ${name}`)
+	} else {
+		return h2(`Code Coverage Report`)
+	}
+}
+
+function comment(lcov, table, options) {
 	return fragment(
-		`Coverage after merging ${b(options.head)} into ${b(options.base)}`,
-		table(tbody(tr(th(percentage(lcov).toFixed(2), "%")))),
+		heading(options.name),
+		p(`Coverage after merging ${b(options.head)} into ${b(options.base)}`),
+		table,
 		"\n\n",
 		details(summary("Coverage Report"), tabulate(lcov, options)),
+		commentIdentifier(options.workflowName),
 	)
+}
+
+function commentIdentifier(workflowName) {
+	return `<!-- Code Coverage Comment: ${workflowName} -->`
 }
 
 function diff(lcov, before, options) {
 	if (!before) {
-		return comment(lcov, options)
+		return comment(
+			lcov,
+			table(tbody(tr(th(percentage(lcov).toFixed(2), "%")))),
+			options,
+		)
 	}
 
 	const pbefore = percentage(before);
@@ -22907,8 +23046,8 @@ function diff(lcov, before, options) {
 	const plus = pdiff > 0 ? "+" : "";
 	const arrow = pdiff === 0 ? "" : pdiff < 0 ? "▾" : "▴";
 
-	return fragment(
-		`Coverage after merging ${b(options.head)} into ${b(options.base)}`,
+	return comment(
+		lcov,
 		table(
 			tbody(
 				tr(
@@ -22917,15 +23056,16 @@ function diff(lcov, before, options) {
 				),
 			),
 		),
-		"\n\n",
-		details(summary("Coverage Report"), tabulate(lcov, options)),
+		options,
 	)
 }
 
 async function main$1() {
 	const token = core$1.getInput("github-token");
+	const name = core$1.getInput("name");
 	const lcovFile = core$1.getInput("lcov-file") || "./coverage/lcov.info";
 	const baseFile = core$1.getInput("lcov-base");
+	const updateComment = core$1.getInput("update-comment");
 
 	const raw = await fs.promises.readFile(lcovFile, "utf-8").catch(err => null);
 	if (!raw) {
@@ -22940,26 +23080,59 @@ async function main$1() {
 	}
 
 	const options = {
+		name,
 		repository: github_1.payload.repository.full_name,
 		commit: github_1.payload.pull_request.head.sha,
 		prefix: `${process.env.GITHUB_WORKSPACE}/`,
 		head: github_1.payload.pull_request.head.ref,
 		base: github_1.payload.pull_request.base.ref,
+		workflowName: process.env.GITHUB_WORKFLOW,
 	};
 
 	const lcov = await parse$2(raw);
 	const baselcov = baseRaw && (await parse$2(baseRaw));
-	const body = diff(lcov, baselcov, options);
+	const body = await diff(lcov, baselcov, options);
+	const githubClient = new github_2(token);
 
-	await new github_2(token).issues.createComment({
-		repo: github_1.repo.repo,
-		owner: github_1.repo.owner,
-		issue_number: github_1.payload.pull_request.number,
-		body: diff(lcov, baselcov, options),
-	});
+	const createGitHubComment = () =>
+		githubClient.issues.createComment({
+			repo: github_1.repo.repo,
+			owner: github_1.repo.owner,
+			issue_number: github_1.payload.pull_request.number,
+			body,
+		});
+
+	const updateGitHubComment = commentId =>
+		githubClient.issues.updateComment({
+			repo: github_1.repo.repo,
+			owner: github_1.repo.owner,
+			comment_id: commentId,
+			body,
+		});
+
+	if (updateComment) {
+		const issueComments = await githubClient.issues.listComments({
+			repo: github_1.repo.repo,
+			owner: github_1.repo.owner,
+			issue_number: github_1.payload.pull_request.number,
+		});
+
+		const existingComment = issueComments.data.find(comment =>
+			comment.body.includes(commentIdentifier(options.workflowName)),
+		);
+
+		if (existingComment) {
+			await updateGitHubComment(existingComment.id);
+			return
+		}
+	}
+
+	await createGitHubComment();
 }
 
-main$1().catch(function(err) {
+var index = main$1().catch(function(err) {
 	console.log(err);
 	core$1.setFailed(err.message);
 });
+
+module.exports = index;
