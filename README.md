@@ -30,7 +30,7 @@ branch. When this is set a diff of the coverage percentages is shown.
 ##### `update-comment` (**Optional**)
 If `true` the comment left on the PR will be updated (if one exists) with the new report data
 instead of a new comment being created. If `false` every run will create a new comment on the PR
-with the new data and keep the previous comments. Deafults to `false`.
+with the new data and keep the previous comments. Defaults to `false`.
 
 ## Example usage
 
