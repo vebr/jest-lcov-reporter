@@ -23079,6 +23079,12 @@ async function main$1() {
 		console.log(`No coverage report found at '${baseFile}', ignoring...`);
 	}
 
+	const isPullRequest = Boolean(github_1.payload.pull_request);
+	if (!isPullRequest) {
+		console.log("Not a pull request, skipping...");
+		return
+	}
+
 	const options = {
 		name,
 		repository: github_1.payload.repository.full_name,

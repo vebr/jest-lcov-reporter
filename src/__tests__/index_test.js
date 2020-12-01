@@ -1,6 +1,6 @@
 import core from "@actions/core"
 import { promises as fs } from "fs"
-import { GitHub } from "@actions/github"
+import { context, GitHub } from "@actions/github"
 import { parse } from "../lcov"
 import { commentIdentifier, diff } from "../comment"
 
@@ -14,11 +14,7 @@ jest.mock("@actions/github", () => ({
 	context: {
 		payload: {
 			repository: { full_name: "name" },
-			pull_request: {
-				base: { ref: "base-ref" },
-				head: { ref: "head-ref" },
-				number: 1,
-			},
+			pull_request: {},
 		},
 		repo: {
 			repo: "repo",
@@ -46,6 +42,12 @@ beforeEach(() => {
 		if (arg === "update-comment") return updateComment
 		return ""
 	})
+
+	context.payload.pull_request = {
+		base: { ref: "base-ref" },
+		head: { ref: "head-ref" },
+		number: 1,
+	}
 
 	parse.mockReturnValueOnce(Promise.resolve("report"))
 	diff.mockReturnValueOnce(Promise.resolve("diff"))
@@ -95,6 +97,34 @@ test("it catches and logs if an error occurs", async () => {
 
 	expect(console.log).toHaveBeenCalledWith(error)
 	expect(core.setFailed).toHaveBeenCalledWith(error.message)
+})
+
+test("when a non pull_request event is passed it logs a message", async () => {
+	jest.spyOn(console, "log")
+
+	context.payload.pull_request = null
+
+	fs.readFile
+		.mockReturnValueOnce(Promise.resolve("file"))
+		.mockReturnValueOnce(Promise.resolve(null))
+
+	const createCommentMock = jest.fn().mockReturnValue(Promise.resolve())
+	const updateCommentMock = jest.fn().mockReturnValue(Promise.resolve())
+	GitHub.mockReturnValue({
+		issues: {
+			createComment: createCommentMock,
+			updateComment: updateCommentMock,
+		},
+	})
+
+	let module
+	jest.isolateModules(() => {
+		module = require("../index").default
+	})
+
+	await module
+
+	expect(console.log).toHaveBeenCalledWith("Not a pull request, skipping...")
 })
 
 test("a comment is created on the pull request with the coverage details", async () => {
