@@ -13,6 +13,7 @@ function tag(name) {
 	}
 }
 
+export const h2 = tag("h2")
 export const details = tag("details")
 export const summary = tag("summary")
 export const tr = tag("tr")
@@ -23,6 +24,7 @@ export const table = tag("table")
 export const tbody = tag("tbody")
 export const a = tag("a")
 export const span = tag("span")
+export const p = tag("p")
 
 export const fragment = function(...children) {
 	return children.join("")

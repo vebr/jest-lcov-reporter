@@ -15,6 +15,10 @@ by another action already.
 Github token used for posting the comment. To use the key provided by the GitHub
 action runner, use `${{ secrets.GITHUB_TOKEN }}`.
 
+##### `name` (**Optional**)
+A name that will be included in the title of the comment. Good if you have multiple
+reports being run and want to differentiate them.
+
 ##### `lcov-file` (**Optional**)
 The location of the lcov file to read the coverage report from. Defaults to
 `./coverage/lcov.info`.
@@ -22,6 +26,11 @@ The location of the lcov file to read the coverage report from. Defaults to
 ##### `lcov-base` (**Optional**)
 The location of the lcov file resulting from running the tests in the base
 branch. When this is set a diff of the coverage percentages is shown.
+
+##### `update-comment` (**Optional**)
+If `true` the comment left on the PR will be updated (if one exists) with the new report data
+instead of a new comment being created. If `false` every run will create a new comment on the PR
+with the new data and keep the previous comments. Defaults to `false`.
 
 ## Example usage
 
