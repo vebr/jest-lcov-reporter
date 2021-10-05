@@ -6,6 +6,7 @@ import { commentIdentifier, diff } from "../comment"
 
 jest.mock("@actions/core", () => ({
 	getInput: jest.fn(),
+	getBooleanInput: jest.fn(),
 	setFailed: jest.fn(),
 }))
 
@@ -39,8 +40,12 @@ beforeEach(() => {
 		if (arg === "name") return "NAME"
 		if (arg === "lcov-file") return "LCOV_FILE"
 		if (arg === "lcov-base") return "LCOV_BASE"
-		if (arg === "update-comment") return updateComment
 		return ""
+	})
+
+	core.getBooleanInput.mockImplementation(arg => {
+		if (arg === "update-comment") return updateComment
+		return false
 	})
 
 	context.payload.pull_request = {
