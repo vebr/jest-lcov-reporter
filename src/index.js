@@ -10,7 +10,7 @@ async function main() {
 	const name = core.getInput("name")
 	const lcovFile = core.getInput("lcov-file") || "./coverage/lcov.info"
 	const baseFile = core.getInput("lcov-base")
-	const updateComment = core.getInput("update-comment")
+	const updateComment = core.getBooleanInput("update-comment")
 
 	const raw = await fs.readFile(lcovFile, "utf-8").catch(err => null)
 	if (!raw) {
